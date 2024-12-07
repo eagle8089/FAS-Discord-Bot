@@ -21,7 +21,7 @@ module.exports = {
 				const role = interaction.member.guild.roles.cache.find((r) => r.id === verified_role_id);
 				interaction.member.roles.add(role);
 				interaction.member.setNickname(TornUserName);
-				await interaction.reply(`${interaction.user.username} verified as TornUserName!`);
+				await interaction.reply(`${interaction.user.username} verified as ${TornUserName}!`);
 			}
 			else{
 				await interaction.reply(`Check your API Key, The Key should have at least Minimal Access`);
