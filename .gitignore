@@ -1,3 +1,6 @@
+# Credential Store
+config.json
+
 # Logs
 logs
 *.log
