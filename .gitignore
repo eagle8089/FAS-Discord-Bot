@@ -1,5 +1,6 @@
 # Credential Store
 config.json
+json.sqlite
 
 # Logs
 logs

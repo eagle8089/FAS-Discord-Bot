@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { verifyUserinFaction } = require('../utils/tornApi.js')
+const { verifyUserinFaction } = require('../utils/tornVerifyUser.js')
 
 module.exports = {
 	data: new SlashCommandBuilder()
