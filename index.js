@@ -5,7 +5,7 @@ const { QuickDB } = require("quick.db");
 const { token, tornApi } = require('./config.json');
 const { getNews } = require('./utils/tornCheckLogs.js');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
 const db = new QuickDB();
 
 client.commands = new Collection();

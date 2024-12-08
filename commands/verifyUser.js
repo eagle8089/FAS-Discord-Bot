@@ -1,5 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { verifyUserinFaction } = require('../utils/tornVerifyUser.js')
+const { QuickDB } = require("quick.db");
+const db = new QuickDB();
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -12,18 +14,24 @@ module.exports = {
 	async execute(interaction) {
 		verified_role_id = '1314864603347292241';
 		const UserTornKey = interaction.options.getString('torn_api_key');
-		if (interaction.member.roles.cache.has(verified_role_id)) {
+		if (await interaction.member.roles.cache.has(verified_role_id)) {
 			await interaction.reply(`${interaction.user.username} is already verified!`);
 		}
 		else {
-			const TornUserName = await verifyUserinFaction(UserTornKey)
-			if (TornUserName) {
-				const role = interaction.member.guild.roles.cache.find((r) => r.id === verified_role_id);
-				interaction.member.roles.add(role);
-				interaction.member.setNickname(TornUserName);
-				await interaction.reply(`${interaction.user.username} verified as ${TornUserName}!`);
+			const [tornUserName, tornUserID] = await verifyUserinFaction(UserTornKey)
+			if (tornUserName) {
+				const userDataSchema = {
+					tornUserName: tornUserName,
+					discordUserID: interaction.member.id,
+					tornUserId: tornUserID
+				}
+				await db.push(`userData`, userDataSchema);
+				const role = await interaction.member.guild.roles.cache.find((r) => r.id === verified_role_id);
+				await interaction.member.roles.add(role);
+				await interaction.member.setNickname(tornUserName);
+				await interaction.reply(`${interaction.user.username} verified as ${tornUserName}!`);
 			}
-			else{
+			else {
 				await interaction.reply(`Check your API Key, The Key should have at least Minimal Access`);
 			}
 		}
