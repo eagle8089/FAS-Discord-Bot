@@ -17,8 +17,8 @@ function stateChanged(newData, lastNews) {
     }
 }
 
-export async function getNews(tornApi, newsType, lastData) {
-    const response = await axios.get(`https://api.torn.com/v2/faction/news?key=${tornApi}&striptags=true&limit=20&sort=DESC&cat=${newsType}`)
+export async function getNews(newsType, lastData) {
+    const response = await axios.get(`https://api.torn.com/v2/faction/news?key=${process.env.TORN_ADMIN_API}&striptags=true&limit=20&sort=DESC&cat=${newsType}`)
     if (response.status != 200) {
         console.log("Error fetching Faction News!");
     }

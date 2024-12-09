@@ -1,7 +1,13 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { verifyUserinFaction } = require('../utils/tornVerifyUser.js')
-const { QuickDB } = require("quick.db");
-const db = new QuickDB();
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const mongo_client = new MongoClient(process.env.MONGO_CON_URL, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+});
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -22,10 +28,13 @@ module.exports = {
 			if (tornUserName) {
 				const userDataSchema = {
 					tornUserName: tornUserName,
-					discordUserID: interaction.member.id,
-					tornUserId: tornUserID
-				}
-				await db.push(`userData`, userDataSchema);
+					tornUserId: tornUserID,
+					discordUserID: interaction.member.id
+				};
+				await mongo_client.connect();
+				const usersCol = mongo_client.db("fas-bot").collection("users");
+				await usersCol.insertOne(userDataSchema);
+				await mongo_client.close();
 				const role = await interaction.member.guild.roles.cache.find((r) => r.id === verified_role_id);
 				await interaction.member.roles.add(role);
 				await interaction.member.setNickname(tornUserName);

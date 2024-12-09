@@ -1,12 +1,18 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
-const { QuickDB } = require("quick.db");
-const { token, tornApi } = require('./config.json');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+require('dotenv').config();
 const { getNews } = require('./utils/tornCheckLogs.js');
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
-const db = new QuickDB();
+const mongo_client = new MongoClient(process.env.MONGO_CON_URL, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
+});
 
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, 'commands');
@@ -52,28 +58,29 @@ client.on("ready", () => {
 
 async function notificationSystem() {
     const param = "giveFunds";
-    const emptyData = {
-        id: null,
-        text: null,
-        timestamp: null
-    };
-    if (await db.get(`${param}LastData`) === null) await db.set(`${param}LastData`, emptyData);
 
     setInterval(async () => {
-        const lastData = await db.get(`${param}LastData`);
-        const [newMsg, MsgData] = await getNews(tornApi, param, lastData);
+        await mongo_client.connect();
+        const logssCol = mongo_client.db("fas-bot").collection("logs");
+        const lastData = await logssCol.findOne({ type: param });
+        await mongo_client.close();
+        const [newMsg, MsgData] = await getNews(param, lastData);
         if (!newMsg) return;
         else {
-            await db.set(`${param}LastData`, JSON.parse(MsgData[0]));
+            await mongo_client.connect();
+            const logssCol = mongo_client.db("fas-bot").collection("logs");
+            const lastMsg = JSON.parse(MsgData[0]);
+            lastMsg.type = param;
+            await logssCol.replaceOne({ type: param }, lastMsg);
+            await mongo_client.close();
             const channel = client.channels.cache.get("1315276631555833886");
             for (var key in MsgData) {
                 let discordMessage = JSON.parse(MsgData[key]).text;
                 channel.send(discordMessage);
             }
-
         }
     }, 10000);
 }
 
 
-client.login(token);
+client.login(process.env.DISCORD_TOKEN);
