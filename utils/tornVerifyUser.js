@@ -1,5 +1,4 @@
 import axios from 'axios';
-const tornApi = 'Z2Rh3D2TSGHf2VeQ';
 
 export async function verifyUserinFaction(MemberApi) {
     const response = await axios.get(`https://api.torn.com/faction/?selections=basic&key=${MemberApi}`)
@@ -14,7 +13,7 @@ export async function verifyUserinFaction(MemberApi) {
     }
 }
 
-export async function verifyUserinFactionMaster(memberId) {
-    const response = await axios.get(`https://api.torn.com/v2/faction/members?key=${tornApi}&striptags=true`)
+export async function verifyUserinFactionMaster() {
+    const response = await axios.get(`https://api.torn.com/v2/faction/members?key=${process.env.TORN_ADMIN_API}&striptags=true`)
     return response.data.members
 }
