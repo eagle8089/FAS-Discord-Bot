@@ -67,19 +67,28 @@ async function notificationSystem() {
 		const logsCol = mongo_client.db('fas-bot').collection('logs');
 		const lastData = await logsCol.findOne({ type: param });
 		await mongo_client.close();
-		const [newMsg, MsgData] = await getNews(param, lastData);
-		if (!newMsg) {return;}
-		else {
+		const [newMsg, newTrx] = await getNews(param, lastData);
+		if (newMsg.length != 0) {
 			await mongo_client.connect();
 			const logsCol1 = mongo_client.db('fas-bot').collection('logs');
-			const lastMsg = JSON.parse(MsgData[0]);
+			const lastMsg = JSON.parse(newMsg[0]);
 			lastMsg.type = param;
 			await logsCol1.replaceOne({ type: param }, lastMsg);
 			await mongo_client.close();
 			const channel = client.channels.cache.get('1315276631555833886');
-			for (const key in MsgData) {
-				const discordMessage = JSON.parse(MsgData[key]).text;
+			for (const key in newMsg) {
+				const discordMessage = JSON.parse(newMsg[key]).text;
 				channel.send(discordMessage);
+			}
+		}
+		if (newTrx.length != 0) {
+			const channel = client.channels.cache.get('1315276631555833886');
+			for (const key in newTrx) {
+				const editMsg = await channel.messages.fetch(newTrx[key]);
+				await editMsg.edit({
+					content: 'Transaction complete',
+					components: [],
+				});
 			}
 		}
 	}, 10000);
