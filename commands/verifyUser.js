@@ -18,7 +18,7 @@ module.exports = {
 				.setDescription('Your Torn API Key with Minimal Permission')
 				.setRequired(true)),
 	async execute(interaction) {
-		const verified_role_id = '1314864603347292241';
+		const verified_role_id = process.env.VERIFIED_ROLE_ID;
 		const UserTornKey = interaction.options.getString('torn_api_key');
 		if (await interaction.member.roles.cache.has(verified_role_id)) {
 			await interaction.reply(`${interaction.user.username} is already verified!`);

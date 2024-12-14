@@ -75,14 +75,14 @@ async function notificationSystem() {
 			lastMsg.type = param;
 			await logsCol1.replaceOne({ type: param }, lastMsg);
 			await mongo_client.close();
-			const channel = client.channels.cache.get('1315276631555833886');
+			const channel = client.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
 			for (const key in newMsg) {
 				const discordMessage = JSON.parse(newMsg[key]).text;
 				channel.send(discordMessage);
 			}
 		}
 		if (newTrx.length != 0) {
-			const channel = client.channels.cache.get('1315276631555833886');
+			const channel = client.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
 			for (const key in newTrx) {
 				const editMsg = await channel.messages.fetch(newTrx[key]);
 				await editMsg.edit({

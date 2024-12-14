@@ -14,8 +14,8 @@ module.exports = {
 		.setName('sync')
 		.setDescription('Sync The Database. Admin Only Command'),
 	async execute(interaction) {
-		const admin_role_id = '1315303955596578908';
-		const verified_role_id = '1314864603347292241';
+		const admin_role_id = process.env.ADMIN_ROLE_ID;
+		const verified_role_id = process.env.VERIFIED_ROLE_ID;
 		if (!await interaction.member.roles.cache.has(admin_role_id)) {
 			await interaction.reply('This is an Administrator Only Command!');
 		}
@@ -32,7 +32,7 @@ module.exports = {
 						if (!member.roles.cache.has(admin_role_id)) {
 							await member.roles.remove(verified_role);
 							await member.setNickname(null);
-							const channel = await interaction.member.guild.channels.cache.get('1315276631555833886');
+							const channel = await interaction.member.guild.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
 							await channel.send(`The User ${member.user.username} has been removed from FAS Role as they are not in the internal Database!`);
 						}
 					}
@@ -55,7 +55,7 @@ module.exports = {
 					await member.roles.remove(verified_role);
 					await member.setNickname(null);
 					await userCol.deleteOne({ tornUserId: user.tornUserId });
-					const channel = await interaction.member.guild.channels.cache.get('1315276631555833886');
+					const channel = await interaction.member.guild.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
 					await channel.send(`The User ${member.user.username} has been removed from FAS Role as they are not in the Faction!`);
 				}
 				let dbExist = false;
