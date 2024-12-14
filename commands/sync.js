@@ -40,7 +40,8 @@ module.exports = {
 			});
 
 			const tornMemberDetails = await verifyUserinFactionMaster();
-			const usersData = mongo_client.db('fas-bot').collection('users').find();
+			const userCol = mongo_client.db('fas-bot').collection('users');
+			const usersData = userCol.find();
 			for await (const user of usersData) {
 				let memExistFlag = false;
 				for (const memKey in tornMemberDetails) {
@@ -49,12 +50,22 @@ module.exports = {
 						break;
 					}
 				}
-				if (memExistFlag) {
+				if (!memExistFlag) {
 					const member = await guild.members.fetch(user.discordUserID);
 					await member.roles.remove(verified_role);
 					await member.setNickname(null);
+					await userCol.deleteOne({ tornUserId: user.tornUserId });
 					const channel = await interaction.member.guild.channels.cache.get('1315276631555833886');
 					await channel.send(`The User ${member.user.username} has been removed from FAS Role as they are not in the Faction!`);
+				}
+				let dbExist = false;
+				await discordUsers.forEach(async (discordUser) => {
+					if (user.discordUserID === discordUser.id) {
+						dbExist = true;
+					}
+				});
+				if (!dbExist) {
+					await userCol.deleteOne({ discordUserID: user.discordUserID });
 				}
 			}
 			await mongo_client.close();
