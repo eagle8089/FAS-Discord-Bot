@@ -20,7 +20,10 @@ module.exports = {
 	async execute(interaction) {
 		const verified_role_id = process.env.VERIFIED_ROLE_ID;
 		const UserTornKey = interaction.options.getString('torn_api_key');
-		if (await interaction.member.roles.cache.has(verified_role_id)) {
+		await mongo_client.connect();
+		const usersCol = mongo_client.db('fas-bot').collection('users');
+		const userEntry = await usersCol.findOne({ discordUserID: interaction.member.id });
+		if (userEntry) {
 			await interaction.reply(`${interaction.user.username} is already verified!`);
 		}
 		else {
@@ -31,12 +34,12 @@ module.exports = {
 					tornUserId: tornUserID,
 					discordUserID: interaction.member.id,
 				};
-				await mongo_client.connect();
-				const usersCol = mongo_client.db('fas-bot').collection('users');
 				await usersCol.insertOne(userDataSchema);
 				await mongo_client.close();
 				const role = await interaction.member.guild.roles.cache.find((r) => r.id === verified_role_id);
-				await interaction.member.roles.add(role);
+				if (await interaction.member.roles.cache.has(verified_role_id)) {
+					await interaction.member.roles.add(role);
+				}
 				await interaction.member.setNickname(tornUserName);
 				await interaction.reply(`${interaction.user.username} verified as ${tornUserName}!`);
 			}
