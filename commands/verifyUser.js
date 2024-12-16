@@ -24,7 +24,7 @@ module.exports = {
 		const usersCol = mongo_client.db('fas-bot').collection('users');
 		const userEntry = await usersCol.findOne({ discordUserID: interaction.member.id });
 		if (userEntry) {
-			await interaction.reply(`${interaction.user.username} is already verified!`);
+			await interaction.reply({ content: `${interaction.user.username} is already verified!`, flags: MessageFlags.Ephemeral });
 		}
 		else {
 			const [tornUserName, tornUserID] = await verifyUserinFaction(UserTornKey);
