@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { verifyUserinFaction } = require('../utils/tornVerifyUser.js');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const mongo_client = new MongoClient(process.env.MONGO_CON_URL, {
@@ -41,7 +41,7 @@ module.exports = {
 					await interaction.member.roles.add(role);
 				}
 				await interaction.member.setNickname(tornUserName);
-				await interaction.reply(`${interaction.user.username} verified as ${tornUserName}!`);
+				await interaction.reply({ content: `${interaction.user.username} verified as ${tornUserName}!`, flags: MessageFlags.Ephemeral });
 			}
 			else {
 				await interaction.reply('Check your API Key, The Key should have at least Minimal Access');
