@@ -37,7 +37,7 @@ module.exports = {
 				await usersCol.insertOne(userDataSchema);
 				await mongo_client.close();
 				const role = await interaction.member.guild.roles.cache.find((r) => r.id === verified_role_id);
-				if (await interaction.member.roles.cache.has(verified_role_id)) {
+				if (!await interaction.member.roles.cache.has(verified_role_id)) {
 					await interaction.member.roles.add(role);
 				}
 				await interaction.member.setNickname(tornUserName);
