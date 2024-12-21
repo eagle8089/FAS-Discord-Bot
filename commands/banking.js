@@ -64,7 +64,7 @@ module.exports = {
 					.addComponents(sendMoney);
 				const channel = await interaction.member.guild.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
 				const alertMsg = await channel.send({
-					content: `<@&${process.env.BANKER_ROLE}>, ${userData.tornUserName} has requested ${parseNumtoComma(withdrawAmount)} from Faction Bank. They have a balance of ${parseNumtoComma(userBalance)}`,
+					content: `<@&${process.env.BANKER_ROLE_ID}>, ${userData.tornUserName} has requested ${parseNumtoComma(withdrawAmount)} from Faction Bank. They have a balance of ${parseNumtoComma(userBalance)}`,
 					components: [sendMoneyRow],
 				});
 				const trxInfo = {
