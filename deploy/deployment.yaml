@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fas-bot
+  name: fas-bot
+  namespace: application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fas-bot
+      deployment: fas-bot
+  template:
+    metadata:
+      labels:
+        app: fas-bot
+        deployment: fas-bot
+    spec:
+      containers:
+      - image: ghcr.io/eagle8089/fas-discord-bot:v1.0.3
+        imagePullPolicy: Always
+        name: fas-bot
+        envFrom:
+        - secretRef:
+          name: fas-secret
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "250m"
+          limits:
+            memory: "1024Mi"
+            cpu: "1000m"
