@@ -23,7 +23,7 @@ spec:
         name: fas-bot
         envFrom:
         - secretRef:
-          name: fas-secret
+            name: fas-secret
         resources:
           requests:
             memory: "128Mi"
