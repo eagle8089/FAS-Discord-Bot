@@ -12,7 +12,7 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
+      image-tag: ${{ github.ref_name }}
     permissions:
       contents: read
       packages: write
