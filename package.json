@@ -1,17 +1,17 @@
 {
-  "name": "fas-discord-bot",
+  "name": "fallen-bot",
   "version": "1.0.0",
   "description": "Fallen Angel Syndicate Discord Bot",
   "main": "index.js",
   "scripts": {
-    "bot": "node index.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eagle8089/FAS-Discord-Bot.git"
   },
   "keywords": [
-    "Discord",
+    "Torn",
     "Bot"
   ],
   "author": "La_Aetos",
@@ -21,12 +21,12 @@
   },
   "homepage": "https://github.com/eagle8089/FAS-Discord-Bot#readme",
   "dependencies": {
-    "axios": "^1.7.9",
-    "discord.js": "^14.16.3",
-    "mongodb": "^6.11.0"
+    "axios": "^1.9.0",
+    "discord.js": "^14.19.3"
   },
   "devDependencies": {
-    "dotenv": "^16.4.7",
-    "eslint": "^9.16.0"
+    "@eslint/js": "^9.26.0",
+    "dotenv": "^16.5.0",
+    "eslint": "^9.26.0"
   }
 }

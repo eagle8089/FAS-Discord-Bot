@@ -1,98 +1,67 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Collection, Events, GatewayIntentBits, MessageFlags } = require('discord.js');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-require('dotenv').config();
-const { getNews } = require('./utils/tornCheckLogs.js');
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
-const mongo_client = new MongoClient(process.env.MONGO_CON_URL, {
-	serverApi: {
-		version: ServerApiVersion.v1,
-		strict: true,
-		deprecationErrors: true,
-	},
-});
+if (process.env.NODE_ENV !== 'development') {
+	require('dotenv').config();
+}
+
+const token = process.env.DISCORD_TOKEN;
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
-const commandsPath = path.join(__dirname, 'commands');
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-for (const file of commandFiles) {
-	const filePath = path.join(commandsPath, file);
-	const command = require(filePath);
-	if ('data' in command && 'execute' in command) {
-		client.commands.set(command.data.name, command);
-	}
-	else {
-		console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-	}
-}
+client.buttons = new Collection();
+client.cooldowns = new Collection();
 
-client.once(Events.ClientReady, readyClient => {
-	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
-});
+const commandFoldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(commandFoldersPath);
 
-client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
-	const command = interaction.client.commands.get(interaction.commandName);
+const buttonsFolderPath = path.join(__dirname, 'buttons');
+const buttonFolders = fs.readdirSync(buttonsFolderPath);
 
-	if (!command) {
-		console.error(`No command matching ${interaction.commandName} was found.`);
-		return;
-	}
-
-	try {
-		await command.execute(interaction);
-	}
-	catch (error) {
-		console.error(error);
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+for (const folder of buttonFolders) {
+	const buttonsPath = path.join(buttonsFolderPath, folder);
+	const buttonFiles = fs.readdirSync(buttonsPath).filter(file => file.endsWith('.js'));
+	for (const file of buttonFiles) {
+		const filePath = path.join(buttonsPath, file);
+		const button = require(filePath);
+		if ('customId' in button && 'execute' in button) {
+			client.buttons.set(button.customId, button);
 		}
 		else {
-			await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+			console.log(`[WARNING] The button handler at ${filePath} is missing a required "customId" or "execute" property.`);
 		}
 	}
-});
-
-client.on('ready', () => {
-	notificationSystem();
-});
-
-async function notificationSystem() {
-	const param = 'giveFunds';
-
-	setInterval(async () => {
-		await mongo_client.connect();
-		const logsCol = mongo_client.db('fas-bot').collection('logs');
-		const lastData = await logsCol.findOne({ type: param });
-		await mongo_client.close();
-		const [newMsg, newTrx] = await getNews(param, lastData);
-		if (newMsg.length != 0) {
-			await mongo_client.connect();
-			const logsCol1 = mongo_client.db('fas-bot').collection('logs');
-			const lastMsg = JSON.parse(newMsg[0]);
-			lastMsg.type = param;
-			await logsCol1.replaceOne({ type: param }, lastMsg);
-			await mongo_client.close();
-			const channel = client.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
-			for (const key in newMsg) {
-				const discordMessage = JSON.parse(newMsg[key]).text;
-				channel.send(discordMessage);
-			}
-		}
-		if (newTrx.length != 0) {
-			const channel = client.channels.cache.get(process.env.ADMIN_CHANNEL_ID);
-			for (const key in newTrx) {
-				const editMsg = await channel.messages.fetch(newTrx[key]);
-				await editMsg.edit({
-					content: 'Transaction complete',
-					components: [],
-				});
-			}
-		}
-	}, 10000);
 }
 
+for (const folder of commandFolders) {
+	const commandsPath = path.join(commandFoldersPath, folder);
+	const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, file);
+		const command = require(filePath);
+		if ('data' in command && 'execute' in command) {
+			client.commands.set(command.data.name, command);
+		}
+		else {
+			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+		}
+	}
+}
 
-client.login(process.env.DISCORD_TOKEN);
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
+	}
+	else {
+		client.on(event.name, (...args) => event.execute(...args));
+	}
+}
+
+client.login(token);
