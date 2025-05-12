@@ -7,6 +7,7 @@ function convertMoney(amount) {
 	const input = amount.trim().toLowerCase();
 
 	if (!isNaN(input)) return Number(input);
+	if (input === 'all') return 'all';
 
 	const regex = /^([0-9]*\.?[0-9]+)([kmbt])?$/;
 	const match = input.match(regex);
@@ -37,7 +38,7 @@ module.exports = {
 		.setDescription('Send a withdraw request to Leadership!')
 		.addStringOption(option =>
 			option.setName('amount')
-				.setDescription('Enter the amount you want to withdraw, you can use 1k, 1m, 1b, etc.')
+				.setDescription('Enter the amount you want to withdraw, you can use all, 1k, 1m, 1b, etc.')
 				.setRequired(true)),
 	async execute(interaction) {
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -48,13 +49,18 @@ module.exports = {
 			return;
 		}
 
-		const amount = convertMoney(interaction.options.getString('amount'));
-		if (Number.isNaN(amount) || amount < 0) {
+		let amount = convertMoney(interaction.options.getString('amount'));
+		const userBalance = await checkUserBalance(interaction.member.displayName);
+
+		if (amount === 'all') {
+			amount = userBalance;
+		}
+
+		if (Number.isNaN(amount) || amount <= 0) {
 			await interaction.editReply({ content: 'Invalid amount, please use a positive number or 1k, 1m, 1b, etc.', flags: MessageFlags.Ephemeral });
 			return;
 		}
 
-		const userBalance = await checkUserBalance(interaction.member.displayName);
 		if (userBalance < 1) {
 			await interaction.editReply({ content: 'You have no money in the faction balance!', flags: MessageFlags.Ephemeral });
 			return;
@@ -73,7 +79,7 @@ module.exports = {
 			await interaction.editReply({ content: 'Critical error, please contact Administrator!', flags: MessageFlags.Ephemeral });
 			return;
 		}
-		const thread = channel.threads.cache.find(t => t.name === 'Balance Changes and Loans');
+		const thread = channel.threads.cache.find(t => t.name === 'Banking Requests');
 		const role = interaction.guild.roles.cache.find(r => r.name === 'Banker');
 
 		if (!thread || !role) {
