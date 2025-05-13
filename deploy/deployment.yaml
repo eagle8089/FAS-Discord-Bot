@@ -18,7 +18,7 @@ spec:
         deployment: fas-bot
     spec:
       containers:
-      - image: ghcr.io/eagle8089/fas-discord-bot:v1.0.6
+      - image: ghcr.io/eagle8089/fas-discord-bot:v1.0.7
         imagePullPolicy: Always
         name: fas-bot
         envFrom:
