@@ -57,7 +57,7 @@ module.exports = {
 		}
 
 		if (Number.isNaN(amount) || amount <= 0) {
-			await interaction.editReply({ content: 'Invalid amount, please use a positive number or 1k, 1m, 1b, etc.', flags: MessageFlags.Ephemeral });
+			await interaction.editReply({ content: 'Invalid amount, please use a positive number or all, 1k, 1m, 1b, etc.', flags: MessageFlags.Ephemeral });
 			return;
 		}
 
@@ -88,7 +88,7 @@ module.exports = {
 			return;
 		}
 
-		const customId = `send_money|${interaction.member.displayName}|${userBalance}`;
+		const customId = `send_money|${interaction.member.displayName}|${amount}`;
 		const sendMoney = new ButtonBuilder()
 			.setCustomId(customId)
 			.setLabel('Send')
